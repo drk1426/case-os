@@ -1,6 +1,5 @@
 #include<stdio.h>
 #include<unistd.h>
-#include<stdlib.h>
 #include<pthread.h>
 #include<time.h>
 
@@ -18,8 +17,8 @@ int countj = 0;
 int threadsi = 5;
 int threadsj = 3;
 
-void *inc_count(void *r);
-void *watch_count(void *r);
+void *i_count(void *r);
+void *w_count(void *r);
 
 pthread_mutex_t mutex;
 pthread_cond_t count_threshold_cv;
@@ -45,11 +44,11 @@ int main()
     pthread_t Proc[5][3];
     pthread_attr_t attr;
     int i,j;
-    printf("Enter Resource 1: ");
+    printf("Enter Resource 1:");
     scanf("%ld",&r1);
-    printf("Enter Resource 2: ");
+    printf("Enter Resource 2:");
     scanf("%ld",&r2);
-    printf("Enter Resource 3: ");
+    printf("Enter Resource 3:");
     scanf("%ld",&r3);
     if(pthread_mutex_init(&mutex,NULL)<0){
      perror("Pthread_mutex_init error.");
@@ -59,21 +58,21 @@ int main()
      //pthread_mutex_init(&mutex,NULL);  
   pthread_cond_init(&count_threshold_cv,NULL);
   pthread_attr_init(&attr);
-  pthread_create(&Proc[0][0],&attr,watch_count,(void *)r1);
-  pthread_create(&Proc[1][0],&attr,inc_count,(void *)r2);
-  pthread_create(&Proc[2][0],&attr,inc_count,(void *)r3);
+  pthread_create(&Proc[0][0],&attr,w_count,(void *)r1);
+  pthread_create(&Proc[1][0],&attr,i_count,(void *)r2);
+  pthread_create(&Proc[2][0],&attr,i_count,(void *)r3);
   for(i=0;i<=threadsi;i++){ 
       for(j=0;j<=threadsj;j++){ 
           pthread_join(Proc[i][j],NULL);
           }
       }
-  printf("waited on %d,%d threads\n",threadsi,threadsj);  
+  printf("waiting on %d,%d threads\n",threadsi,threadsj);  
   pthread_attr_destroy(&attr);
   pthread_mutex_destroy(&mutex);
   pthread_cond_destroy(&count_threshold_cv);
   pthread_exit(NULL);
 }
-void *inc_count(void *r)
+void *i_count(void *r)
 { 
   int i,j,n,m;
   long id =(long)r;
@@ -90,14 +89,14 @@ void *inc_count(void *r)
     printf("thread %ld,Need = %d\n",id,need[n][m]);
     pthread_mutex_unlock(&mutex);
     sleep(1);
-    watch_count(r);
+    w_count(r);
     }
   pthread_exit(NULL);
-  watch_count(r);
+  w_count(r);
 }
-void *watch_count(void *r)
+void *w_count(void *r)
 {
-  long id = (long)r;
+  long id =(long)r;
   int n,m;
   printf("thread %ld\n",id);
   while(counti<process && countj<resources)
