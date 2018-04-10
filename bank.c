@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
-#inlcude<pthread.h>
+#include<pthread.h>
 #include<time.h>
 
 #define process 5
@@ -67,13 +67,12 @@ int main()
           pthread_join(Proc[i][j],NULL);
           }
       }
-  printf("Main: waited on %d,%d threads.Done.\n",threadsi,threadsj);  
+  printf("waited on %d,%d threads\n",threadsi,threadsj);  
   pthread_attr_destroy(&attr);
   pthread_mutex_destroy(&mutex);
   pthread_cond_destroy(&count_threshold_cv);
   pthread_exit(NULL);
 }
-
 void *inc_count(void *r)
 { 
   int i,j,n,m;
@@ -86,9 +85,9 @@ void *inc_count(void *r)
     pthread_mutex_lock(&mutex);
     if(counti == process && countj == resources){
        pthread_cond_signal(&count_threshold_cv);
-       printf("inc_count: thread %ld, Need = %d.Threshold reached.\n",id,need[n][m]);
+       printf("thread %ld,Need = %d\n",id,need[n][m]);
        }
-    printf("inc_count: thread %ld,Need = %d.Unlocking mutex.\n",id,need[n][m]);
+    printf("thread %ld,Need = %d\n",id,need[n][m]);
     pthread_mutex_unlock(&mutex);
     sleep(1);
     watch_count(r);
@@ -96,21 +95,20 @@ void *inc_count(void *r)
   pthread_exit(NULL);
   watch_count(r);
 }
-
 void *watch_count(void *r)
 {
   long id = (long)r;
   int n,m;
-  printf("Start watch_count: thread %ld\n",id);
+  printf("thread %ld\n",id);
   while(counti<process && countj<resources)
   { 
    pthread_mutex_lock(&mutex);
    available[n] = max[n][m] - allocation[counti++][countj++];
    printf("Available = %d\n",available[n]);
    pthread_cond_wait(&count_threshold_cv,&mutex);
-   printf("watch_count: thread %ld,available = %d.Conditional Signal Received.\n",id,available[m]);
+   printf("thread %ld,available = %d\n",id,available[m]);
    countj++;
-   printf("watch_count: thread %ld,Need now = %d.\n",id,need[counti][countj]);
+   printf("thread %ld,Need now = %d\n",id,need[counti][countj]);
   }
   pthread_mutex_unlock(&mutex);
   pthread_exit(NULL);
